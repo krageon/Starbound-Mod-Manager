@@ -5,6 +5,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import common.Configuration;
+import common.FileHelper;
+import common.Configuration.KeyValuePair;
+import data.Mod;
+import view.FXDialogueConfirm;
+import view.FXDialogueYesNo;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -24,7 +30,6 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
-import application.Configuration.KeyValuePair;
 
 public class ModManager extends Application {
 	

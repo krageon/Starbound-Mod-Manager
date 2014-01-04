@@ -1,11 +1,11 @@
 //See: http://stackoverflow.com/questions/15160181/javafx-image-png-transparency-crispness-being-lost-when-rendering
 
-package application;
+package view;
 
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
 
-class CenteredRegion extends Region {
+public class CenteredRegion extends Region {
 	
 	private Node content;
 

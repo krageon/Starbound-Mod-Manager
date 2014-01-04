@@ -1,4 +1,4 @@
-package application;
+package view;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
