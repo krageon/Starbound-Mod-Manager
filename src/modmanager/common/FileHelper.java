@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class FileHelper {
 
@@ -41,9 +42,46 @@ public class FileHelper {
 				listFiles(file.getAbsolutePath(), files);
 			}
 		}
-
 	}
+	
+	// This is duplicate code, I know. Either I'm spoiled by C# or this is too much generics for Java
+	//	please correct if there's a way to mesh these together (eg via a lazy LINQ-equivalent structure
+	//	that can pass queries around and wait to resolve them)
+	public static void listFiles(String directory, HashSet<File> files) {
+		File dir = new File(directory);
 
+		for (File file : dir.listFiles()) {
+			if (file.isFile()) {
+				files.add(file);
+			} else if (file.isDirectory()) {
+				listFiles(file.getAbsolutePath(), files);
+			}
+		}
+	}
+	
+	public static boolean hasConflict(String directoryA, String directoryB) {
+		HashSet<File> filesInA = new HashSet<File>();
+		listFiles(directoryA, filesInA);
+		
+		return hasConflict(filesInA, directoryB);
+	}
+	
+	public static boolean hasConflict(HashSet<File> filesInA, String directoryB) {
+		File compareTo = new File(directoryB);
+		for (File file : compareTo.listFiles()) {
+			if (file.isFile()) {
+				if (filesInA.contains(file))
+					return true;
+			} else if (file.isDirectory()) {
+				// AND-ing this is OK because the leaves always 
+				//	return false eventually (assuming no conflicts exist)
+				return hasConflict(filesInA, file.getAbsolutePath());
+			}
+		}
+		
+		return false;
+	}
+	
 	public static void copyFolder(File src, File dest) throws IOException {
 
 		if (src.isDirectory()) {

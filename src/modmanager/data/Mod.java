@@ -13,6 +13,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.ldap.HasControls;
+
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -49,7 +51,17 @@ public class Mod {
 	}
 	
 	public String getInternalName() {
-		return modinfo.substring(0,	modinfo.indexOf(".modinfo");
+		return modinfo.substring(0,	modinfo.indexOf(".modinfo"));
+	}
+	
+	public String getModFolder() {
+		return Configuration.modsInstallFolder.getAbsolutePath()
+				+ File.separator
+				+ getInternalName();
+	}
+	
+	public String getModArchive() {
+		return Configuration.modsFolder.getAbsolutePath() + File.separator + zip;
 	}
 
 	// TODO: This is view logic - the variables need an observer pattern and
@@ -63,10 +75,9 @@ public class Mod {
 	public void uninstall(final ArrayList<Mod> installedMods) {
 		boolean patched = false;
 
-		File targetFolder = new File(Configuration.modsInstallFolder.getAbsolutePath()
-				+ File.separator + getInternalName());
+		File modFolder = new File(getModFolder());
 		// TODO: Replace with !Directory.Exists
-		if (!targetFolder.exists()) {
+		if (!modFolder.exists()) {
 			return;
 		}
 
@@ -83,14 +94,10 @@ public class Mod {
 
 		}
 
-		if (new File(Configuration.modsInstallFolder.getAbsolutePath()
-				+ File.separator + getInternalName()).exists()) {
+		if (modFolder.exists()) {
 
 			try {
-				FileHelper.deleteFile(Configuration.modsInstallFolder
-						.getAbsolutePath()
-						+ File.separator
-						+ getInternalName());
+				FileHelper.deleteFile(getModFolder());
 			} catch (IOException e) {
 				Configuration.printException(e,
 						"Deleting installed mod folder.");
@@ -103,56 +110,16 @@ public class Mod {
 
 		try {
 
-			ZipFile modArchive = new ZipFile(
-					Configuration.modsFolder.getAbsolutePath() + File.separator
-							+ zip);
-
-			modArchive
-					.extractAll(Configuration.modsInstallFolder
-							.getAbsolutePath()
-							+ File.separator
-							+ modinfo.substring(0,
-									modinfo.indexOf(".modinfo")));
+			ZipFile modArchive = new ZipFile(getModArchive());
+			
+			// TODO: Find directory that contains modinfo file, extract only that dir (as the root)
+			//	into the getInternalName folder
+			modArchive.extractAll(getModFolder());
 
 		} catch (ZipException e) {
 			Configuration.printException(e,
 					"Extracting mod folder when installing.");
 		}
-
-		if (subDirectory != null) {
-			try {
-				// TODO: Proper single-argument function for this
-				//	NOTE: What does that first part even do? That is weird.
-				FileHelper.copyDirectory(
-						Configuration.modsInstallFolder.getAbsolutePath()
-								+ File.separator
-								+ subDirectory
-								+ File.separator
-								+ modInfoName.substring(0,
-										modInfoName.indexOf(".modinfo")),
-						Configuration.modsInstallFolder.getAbsolutePath()
-								+ File.separator
-								+ modInfoName.substring(0,
-										modInfoName.indexOf(".modinfo")));
-				FileHelper.deleteFile(Configuration.modsInstallFolder
-						.getAbsolutePath()
-						+ File.separator
-						+ subDirectory
-						+ File.separator
-						+ modInfoName.substring(0,
-								modInfoName.indexOf(".modinfo")));
-			} catch (IOException e) {
-				Configuration
-						.printException(e,
-								"Copying installed mod subdirectory to main directory.");
-			}
-		}
-		
-		// TODO: Redundant or view logic.
-		Configuration.addProperty("mods", file, "true");
-		installed = true;
-
-		updateStyles();
 
 		if (conflictsWithInstalledMods(installedMods)) {
 			try {
@@ -166,21 +133,12 @@ public class Mod {
 
 	private boolean conflictsWithInstalledMods(
 			final ArrayList<Mod> installedMods) {
-		// TODO: There *must* be a more elegant way to do this.
-		//	NOTE: Maybe read filelist, store in sqlite db with .zip file hash as key.
-		//	NOTE: Alternatively, shell out to 7z - there's definitely a performance penalty here.
-		ArrayList<Mod> tempModList = new ArrayList<Mod>(installedMods);
-		ArrayList<String> conflictingFiles = new ArrayList<String>();
-
-		tempModList.remove(this);
-
-		for (Mod mod : tempModList) {
-			conflictingFiles.addAll(mod.filesModified);
+		for (Mod mod : installedMods) {
+			if (FileHelper.hasConflict(this.getModFolder(), mod.getModFolder()))
+				return true;
 		}
 
-		conflictingFiles.retainAll(filesModified);
-
-		return (conflictingFiles.size() != 0);
+		return false;
 
 	}
 
