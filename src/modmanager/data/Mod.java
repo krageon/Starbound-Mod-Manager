@@ -168,43 +168,31 @@ public class Mod {
 		HashSet<Mod> conflictingMods = new HashSet<Mod>();
 
 		// Find all conflicting files in currently installed mods.
-		HashMap<String, Integer> fileConflictsTemp = new HashMap<String, Integer>();
-
-		for (Mod mod : installedMods) {
-			for (String file : mod.filesModified) {
-				if (fileConflictsTemp.containsKey(file)) {
-					fileConflictsTemp
-							.put(file, fileConflictsTemp.get(file) + 1);
-				} else {
-					fileConflictsTemp.put(file, 1);
-				}
-			}
-		}
-
+		HashSet<String> filesSeen = new HashSet<String>();
 		HashSet<String> fileConflicts = new HashSet<String>();
 
-		for (String s : fileConflictsTemp.keySet()) {
-			if (fileConflictsTemp.get(s) > 1) {
-				fileConflicts.add(s);
+		for (Mod mod : installedMods) {
+			ArrayList<File> files = new ArrayList<File>();
+			FileHelper.listFiles(mod.getModFolder(), files);
+			
+			for (File file : files) {
+				String path = file.getAbsolutePath();
+				if (filesSeen.contains(path)) {
+					fileConflicts.add(path);
+				} else {
+					filesSeen.add(path);
+				}
 			}
 		}
 
 		HashSet<String> toRemove = new HashSet<String>();
-
+		
 		// Purge ignored file extensions.
 		for (String s : Configuration.fileTypesToIgnore) {
 			for (String file : fileConflicts) {
-
-				if (!new File(Configuration.starboundFolder.getAbsolutePath()
-						+ File.separator + "assets" + File.separator + file)
-						.exists()) {
-					toRemove.add(file);
-				}
-
 				if (file.endsWith(s)) {
 					toRemove.add(file);
 				}
-
 			}
 		}
 
