@@ -1,4 +1,4 @@
-package data;
+package modmanager.data;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -588,14 +588,10 @@ public class Mod {
 	//		in that order - this will save loads of processing time (especially on initial modloader setup).
 	// directory
 	@SuppressWarnings("rawtypes")
-	public static Mod loadMod(String fileName, boolean installed) {
-
+	public static Mod loadMod(String fileName) {
 		Mod mod = new Mod();
 
 		mod.file = fileName;
-		mod.installed = installed;
-
-		mod.modInfoName = "";
 
 		try {
 
@@ -612,13 +608,8 @@ public class Mod {
 							new File("").getAbsolutePath());
 					mod.modInfoName = fileHeader.getFileName();
 					if (mod.modInfoName.contains("/")) {
-						mod.subDirectory = mod.modInfoName.substring(0,
-								mod.modInfoName.lastIndexOf('/'));
 						mod.modInfoName = mod.modInfoName
 								.substring(mod.modInfoName.lastIndexOf('/') + 1);
-					} else {
-						mod.subDirectory = null;
-					}
 					break;
 				}
 			}
@@ -649,6 +640,7 @@ public class Mod {
 						mod.subDirectory + File.separator + mod.modInfoName)));
 			}
 
+			map.g
 			for (Object e : map.keySet()) {
 
 				String value = e.toString();
@@ -707,16 +699,6 @@ public class Mod {
 			Configuration.printException(e, "Reading mod info file to JSON: "
 					+ mod.modInfoName);
 			return null;
-		}
-
-		if (!mod.modInfoName.replace(".modinfo", "").toLowerCase()
-				.equals(mod.internalName.toLowerCase())) {
-			// new FXDialogueConfirm("Mod \"" + mod.file +
-			// "\"'s name in its .modinfo file must be the same as the .modinfo file name.\nPlease contact the creator of this mod for help.").show();
-			Configuration.printException(new Exception("\"" + mod.modInfoName
-					+ "\" does not match \"" + mod.internalName + "\""),
-					"Internal name vs. Modinfo name.");
-			// return null;
 		}
 
 		try {
@@ -823,51 +805,6 @@ public class Mod {
 			Configuration.printException(e,
 					"Locating assets folder in archive.");
 		}
-
-		// TODO: This is viewlogic and needs to be moved elsewhere. I'm ... This adds an entry to the list?
-		mod.container = new VBox();
-
-		mod.gridPane = new GridPane();
-		mod.gridPane.setAlignment(Pos.CENTER);
-
-		mod.gridPane.setMinHeight(46);
-		mod.gridPane.setPadding(new Insets(0, 0, 0, 15));
-
-		mod.bottomStroke = new Rectangle(350, 2);
-		mod.bottomStroke.widthProperty().bind(mod.container.widthProperty());
-
-		mod.container.getChildren().addAll(mod.gridPane, mod.bottomStroke);
-
-		mod.modName = new Text(mod.displayName);
-		mod.modName.getStyleClass().add("modname");
-		mod.gridPane.add(mod.modName, 0, 0, 1, 2);
-
-		mod.modVersion = new Text("v" + mod.version);
-		mod.modVersion.getStyleClass().add("modversion");
-		GridPane.setValignment(mod.modVersion, VPos.BOTTOM);
-		mod.gridPane.add(mod.modVersion, 1, 0);
-
-		mod.modAuthor = new Text(mod.author);
-		mod.modAuthor.getStyleClass().add("modauthor");
-		GridPane.setValignment(mod.modVersion, VPos.TOP);
-		mod.gridPane.add(mod.modAuthor, 1, 1);
-
-		ColumnConstraints col1 = new ColumnConstraints();
-		col1.setFillWidth(true);
-		col1.setHgrow(Priority.ALWAYS);
-		mod.gridPane.getColumnConstraints().add(col1);
-
-		ColumnConstraints col2 = new ColumnConstraints();
-		col2.setHalignment(HPos.RIGHT);
-		mod.gridPane.getColumnConstraints().add(col2);
-
-		ColumnConstraints col3 = new ColumnConstraints();
-		col3.setMinWidth(42);
-		col3.setMaxWidth(42);
-		col3.setHalignment(HPos.CENTER);
-		mod.gridPane.getColumnConstraints().add(col3);
-
-		mod.updateStyles();
 
 		return mod;
 

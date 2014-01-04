@@ -1,6 +1,6 @@
 //See: http://stackoverflow.com/questions/15160181/javafx-image-png-transparency-crispness-being-lost-when-rendering
 
-package view;
+package modmanager.view;
 
 import javafx.scene.Node;
 import javafx.scene.layout.Region;

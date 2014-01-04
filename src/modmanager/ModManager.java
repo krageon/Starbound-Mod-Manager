@@ -1,16 +1,16 @@
-package application;
+package modmanager;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.Configuration;
-import common.FileHelper;
-import common.Configuration.KeyValuePair;
-import data.Mod;
-import view.FXDialogueConfirm;
-import view.FXDialogueYesNo;
+import modmanager.common.Configuration;
+import modmanager.common.FileHelper;
+import modmanager.common.Configuration.KeyValuePair;
+import modmanager.data.Mod;
+import modmanager.view.FXDialogueConfirm;
+import modmanager.view.FXDialogueYesNo;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -211,7 +211,7 @@ public class ModManager extends Application {
 		BorderPane.setMargin(modListWrapper, new Insets(0, 15, 0, 15));
 		
 		Scene s = new Scene(contents);
-		s.getStylesheets().add(application.ModManager.class.getResource("styles.css").toExternalForm());
+		s.getStylesheets().add(modmanager.ModManager.class.getResource("styles.css").toExternalForm());
 		
 		primaryStage.setScene(s);
 		primaryStage.setWidth(Integer.parseInt(Configuration.getProperty("width", "950")));

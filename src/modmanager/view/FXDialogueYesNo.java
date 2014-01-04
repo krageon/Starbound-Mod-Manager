@@ -1,4 +1,4 @@
-package view;
+package modmanager.view;
 
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;

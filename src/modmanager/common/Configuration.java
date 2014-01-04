@@ -1,4 +1,4 @@
-package common;
+package modmanager.common;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 
-import application.ModManager;
-import view.FXDialogueConfirm;
-import view.FXDialogueDropdown;
+import modmanager.ModManager;
+import modmanager.view.FXDialogueConfirm;
+import modmanager.view.FXDialogueDropdown;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
