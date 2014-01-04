@@ -85,27 +85,23 @@ public class Mod {
 		// Configuration.addProperty("mods", file, "false");
 
 		if (conflictsWithInstalledMods(installedMods)) {
-
 			try {
 				createModPatch(installedMods);
 			} catch (IOException e) {
 				Configuration.printException(e, "Creating mod patch.");
 			}
-
 		}
 
 		if (modFolder.exists()) {
-
 			try {
 				FileHelper.deleteFile(getModFolder());
 			} catch (IOException e) {
 				Configuration.printException(e,
 						"Deleting installed mod folder.");
 			}
-
 		}
 	}
-
+	
 	public void install(final ArrayList<Mod> installedMods) {
 
 		try {
@@ -130,6 +126,19 @@ public class Mod {
 		}
 
 	}
+	
+	public void extract() {
+		try {
+		// TODO: Make it extract as if the root was the folder that contains the modinfo file 
+		//	(this eliminates subfolders of any depth forever)
+		ZipFile modArchive = new ZipFile(getModArchive());
+		modArchive.extractAll(getModFolder());
+		} catch (ZipException e) {
+			Configuration
+					.printException(e,
+							"Last installed mod in patch gets put in its own folder again.");
+		}
+	}
 
 	private boolean conflictsWithInstalledMods(
 			final ArrayList<Mod> installedMods) {
@@ -139,122 +148,19 @@ public class Mod {
 		}
 
 		return false;
-
 	}
 
 	private void createModPatch(final ArrayList<Mod> installedMods)
 			throws IOException {
-		// TODO: This is a mess
-		if (installedMods.size() <= 1) {
-
-			// No patches needed, delete the patches folder.
-			if (Configuration.modsPatchesFolder.exists()) {
-				FileHelper.deleteFile(Configuration.modsPatchesFolder);
-			}
-			// TODO: Investigate possible code duplication
-			for (Mod mod : installedMods) {
-
-				try {
-					ZipFile modArchive = new ZipFile(
-							Configuration.modsFolder.getAbsolutePath()
-									+ File.separator + mod.file);
-					modArchive.extractAll(Configuration.modsInstallFolder
-							.getAbsolutePath()
-							+ File.separator
-							+ mod.modInfoName.substring(0,
-									mod.modInfoName.indexOf(".modinfo")));
-				} catch (ZipException e) {
-					Configuration
-							.printException(e,
-									"Last installed mod in patch gets put in its own folder again.");
-				}
-
-				if (mod.subDirectory != null) {
-					try {
-						FileHelper.copyDirectory(
-								Configuration.modsInstallFolder
-										.getAbsolutePath()
-										+ File.separator
-										+ mod.subDirectory
-										+ File.separator
-										+ mod.modInfoName.substring(0,
-												mod.modInfoName
-														.indexOf(".modinfo")),
-								Configuration.modsInstallFolder
-										.getAbsolutePath()
-										+ File.separator
-										+ mod.modInfoName.substring(0,
-												mod.modInfoName
-														.indexOf(".modinfo")));
-						FileHelper.deleteFile(Configuration.modsInstallFolder
-								.getAbsolutePath()
-								+ File.separator
-								+ mod.subDirectory
-								+ File.separator
-								+ mod.modInfoName.substring(0,
-										mod.modInfoName.indexOf(".modinfo")));
-					} catch (IOException e) {
-						Configuration
-								.printException(e,
-										"Copying installed mod subdirectory to main directory during patch.");
-					}
-				}
-
-			}
-
-			return;
-
+		for (Mod mod : installedMods) {
+			mod.extract();
 		}
 		
-		// NOTE: Why does this happen
-		Collections.reverse(installedMods);
-
-		// TODO: This. Cleaner.
-		for (Mod mod : installedMods) {
-
-			try {
-				ZipFile modArchive = new ZipFile(
-						Configuration.modsFolder.getAbsolutePath()
-								+ File.separator + mod.file);
-				modArchive.extractAll(Configuration.modsInstallFolder
-						.getAbsolutePath()
-						+ File.separator
-						+ mod.modInfoName.substring(0,
-								mod.modInfoName.indexOf(".modinfo")));
-			} catch (ZipException e) {
-				Configuration.printException(e,
-						"Copying temporary folders and files for mod merging.");
-			}
-
-			if (mod.subDirectory != null) {
-				try {
-					FileHelper.copyDirectory(
-							Configuration.modsInstallFolder.getAbsolutePath()
-									+ File.separator
-									+ mod.subDirectory
-									+ File.separator
-									+ mod.modInfoName
-											.substring(0, mod.modInfoName
-													.indexOf(".modinfo")),
-							Configuration.modsInstallFolder.getAbsolutePath()
-									+ File.separator
-									+ mod.modInfoName
-											.substring(0, mod.modInfoName
-													.indexOf(".modinfo")));
-					FileHelper.deleteFile(Configuration.modsInstallFolder
-							.getAbsolutePath()
-							+ File.separator
-							+ mod.subDirectory
-							+ File.separator
-							+ mod.modInfoName.substring(0,
-									mod.modInfoName.indexOf(".modinfo")));
-				} catch (IOException e) {
-					Configuration
-							.printException(e,
-									"Copying installed mod subdirectory to main directory during patch.");
-				}
-			}
-
+		if (installedMods.size() <= 1) {
+			if (Configuration.modsPatchesFolder.exists())
+				FileHelper.deleteFile(Configuration.modsPatchesFolder);
+			
+			return;
 		}
 		
 		// NOTE: Didn't we calculate this at a previous point somewhere?
