@@ -13,8 +13,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import view.CenteredRegion;
-import view.FXDialogueConfirm;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -37,60 +35,43 @@ import net.lingala.zip4j.model.FileHeader;
 import com.cedarsoftware.util.io.JsonObject;
 import com.cedarsoftware.util.io.JsonReader;
 
-import common.Configuration;
-import common.FileHelper;
+import modmanager.common.Configuration;
+import modmanager.common.FileHelper;
+import modmanager.view.CenteredRegion;
+import modmanager.view.FXDialogueConfirm;
 
 public class Mod {
-	// I'm pretty sure this needs to go also.
-	public ArrayList<String> filesModified = new ArrayList<String>();
-
-	public boolean patched = false;
-
 	// These never change
-	public String internalName;
-	public String file;
-	public String subDirectory;
+	public String zip;
+	public String modinfo;
 
 	private Mod() {
 	}
-
-	public void setFile(String file) {
-		this.file = file;
-	}
-
-	public void setName(String name) {
-		this.internalName = name;
+	
+	public String getInternalName() {
+		return modinfo.substring(0,	modinfo.indexOf(".modinfo");
 	}
 
 	// TODO: This is view logic - the variables need an observer pattern and
 	// getters and setters so they'll
 	// be less retarded to manage and read.
-	public void setConflicted(boolean conflicted) {
+	/*public void setConflicted(boolean conflicted) {
 		hasConflicts = conflicted;
 		updateStyles();
-	}
-
-	public ArrayList<String> getFilesModified() {
-		return filesModified;
-	}
-
-	public void setFilesModified(ArrayList<String> filesModified) {
-		this.filesModified = filesModified;
-	}
+	}*/
 
 	public void uninstall(final ArrayList<Mod> installedMods) {
-		patched = false;
+		boolean patched = false;
 
+		File targetFolder = new File(Configuration.modsInstallFolder.getAbsolutePath()
+				+ File.separator + getInternalName());
 		// TODO: Replace with !Directory.Exists
-		if (!installed) {
+		if (!targetFolder.exists()) {
 			return;
 		}
 
-		// TODO: Remove the need for this (as often as possible - magic strings! D:)
-		Configuration.addProperty("mods", file, "false");
-		
-		// TODO: Ditto. Maybe cache.
-		installed = false;
+		// TODO: Replace all calls to this property with modinstallfolder + internalname exists checks
+		// Configuration.addProperty("mods", file, "false");
 
 		if (conflictsWithInstalledMods(installedMods)) {
 
@@ -103,23 +84,19 @@ public class Mod {
 		}
 
 		if (new File(Configuration.modsInstallFolder.getAbsolutePath()
-				+ File.separator + internalName).exists()) {
+				+ File.separator + getInternalName()).exists()) {
 
 			try {
 				FileHelper.deleteFile(Configuration.modsInstallFolder
 						.getAbsolutePath()
 						+ File.separator
-						+ modInfoName.substring(0,
-								modInfoName.indexOf(".modinfo")));
+						+ getInternalName());
 			} catch (IOException e) {
 				Configuration.printException(e,
-						"Deleting installed mod folder when uninstalling.");
+						"Deleting installed mod folder.");
 			}
 
 		}
-		// TODO: View logic again. This is why we need an observer
-		updateStyles();
-
 	}
 
 	public void install(final ArrayList<Mod> installedMods) {
@@ -128,14 +105,14 @@ public class Mod {
 
 			ZipFile modArchive = new ZipFile(
 					Configuration.modsFolder.getAbsolutePath() + File.separator
-							+ file);
+							+ zip);
 
 			modArchive
 					.extractAll(Configuration.modsInstallFolder
 							.getAbsolutePath()
 							+ File.separator
-							+ modInfoName.substring(0,
-									modInfoName.indexOf(".modinfo")));
+							+ modinfo.substring(0,
+									modinfo.indexOf(".modinfo")));
 
 		} catch (ZipException e) {
 			Configuration.printException(e,
